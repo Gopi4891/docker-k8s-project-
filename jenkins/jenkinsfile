@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "myapp-demo:latest"
+        ECR_REPO     = "654654417834.dkr.ecr.ap-south-1.amazonaws.com/myapp"
+        K8S_CONTEXT  = "aws-eks"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/Gopi4891/docker-k8s-project-.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $DOCKER_IMAGE ./app'
+            }
+        }
+
+        stage('Push to ECR') {
+            steps {
+                sh './scripts/push_to_ecr.sh'
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh './scripts/deploy_k8s.sh'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'pytest ./tests'
+            }
+        }
+    }
+}
